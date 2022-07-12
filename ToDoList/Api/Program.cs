@@ -9,9 +9,9 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-var connString = builder.Configuration.GetConnectionString("Main");
+
 builder.Services.AddDbContext<DatabaseContext>(settings =>
-    settings.UseNpgsql(connString, sqlOpt => sqlOpt.CommandTimeout(350))
+    settings.UseNpgsql(builder.Configuration.GetConnectionString("Main"), sqlOpt => sqlOpt.CommandTimeout(300))
 );
 
 var app = builder.Build();
@@ -24,14 +24,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
-using (var scope = app.Services.CreateScope()) 
+using (var scope = app.Services.CreateScope())
 {
-    var dbContext= scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+    var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
     dbContext.Database.Migrate();
 }
 
