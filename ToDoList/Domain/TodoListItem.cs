@@ -17,7 +17,7 @@
             Title = title;
         }
 
-        public void SetContenet(string content)
+        public void SetContent(string content)
         {
             Content = content;
         }
