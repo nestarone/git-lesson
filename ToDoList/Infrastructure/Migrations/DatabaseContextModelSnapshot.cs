@@ -36,7 +36,7 @@ namespace ToDoList.Infrastructure.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("UserId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -63,9 +63,13 @@ namespace ToDoList.Infrastructure.Database.Migrations
 
             modelBuilder.Entity("ToDoList.Domain.TodoListItem", b =>
                 {
-                    b.HasOne("ToDoList.Domain.User", null)
+                    b.HasOne("ToDoList.Domain.User", "User")
                         .WithMany("TodoListItems")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ToDoList.Domain.User", b =>
