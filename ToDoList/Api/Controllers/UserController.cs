@@ -2,59 +2,45 @@
 using ToDoList.Domain;
 using ToDoList.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
+using MediatR;
+using ToDoList.Api.Features.Users;
 
 namespace ToDoList.Api.Controllers
 {
-    public class UserViewModel
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public int TodoItemsCount { get; set; }
-    }
+    //public class UserViewModel
+    //{
+    //    public Guid Id { get; set; }
+    //    public string Name { get; set; }
+    //    public int TodoItemsCount { get; set; }
+    //}
 
-    public class TodoListItemViewModel
-    {
+    //public class TodoListItemViewModel
+    //{
 
-    }
+    //}
 
     [ApiController]
     [Route("users")]
     public class UserController : ControllerBase
     {
         private readonly DatabaseContext _databaseContext;
+        private readonly IMediator _mediator;
 
-        public UserController(DatabaseContext databaseContext)
+        public UserController(DatabaseContext databaseContext, IMediator mediator)
         {
             _databaseContext = databaseContext;
+            _mediator = mediator;
         }
         [HttpGet]
-        public async Task<IReadOnlyCollection<UserViewModel>> GetUsers(string? keywords, CancellationToken token)
+        public async Task<IReadOnlyCollection<GetUsersResponse>> GetUsers([FromQuery]GetUsersQuery query, CancellationToken token)
         {
-            var query = _databaseContext.Users.AsQueryable();
-
-            if (!string.IsNullOrEmpty(keywords))
-            {
-                query = query.Where(user => user.Name.ToLower().Contains(keywords.ToLower()));
-            }
-
-            return await query.Select(user => new UserViewModel
-            {
-                Id = user.Id,
-                Name = user.Name,
-                TodoItemsCount = user.TodoListItems.Count()
-            })
-                .ToListAsync(token);
+            return await _mediator.Send(query, token);
         }
 
         [HttpPost]
-        public async Task<Guid> CreateUser(string name, CancellationToken token)
+        public async Task<Guid> CreateUser([FromBody]CreateUserCommand command, CancellationToken token)
         {
-            var user = new User(name);
-            _databaseContext.Add(user);
-            await _databaseContext.SaveChangesAsync(token);
-
-            return user.Id;
-
+            return await _mediator.Send(command, token);
         }
 
     }
