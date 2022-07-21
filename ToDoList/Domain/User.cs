@@ -31,5 +31,11 @@
         {
             _todoListItems.Remove(todoListItem);
         }
+
+        public void UpdateTodoListItem(TodoListItem todoListItem, string title, string content) {
+            var item =  _todoListItems.Where(item => item.Id == todoListItem.Id&&item.UserId==todoListItem.UserId).Single();
+            item.SetTitle(title);
+            item.SetContent(content);
+        }
     }
 }

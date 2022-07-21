@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ToDoList.Api.Features.Todos;
 using ToDoList.Infrastructure.Database;
 
 namespace ToDoList.Api.Controllers
@@ -9,6 +11,7 @@ namespace ToDoList.Api.Controllers
     public class TodoController : ControllerBase
     {
         private readonly DatabaseContext _databaseContext;
+        private readonly IMediator _mediator;
 
         public class TodoListItemViewModel
         {
@@ -18,60 +21,37 @@ namespace ToDoList.Api.Controllers
 
         }
 
-        public TodoController(DatabaseContext databaseContext)
+        public TodoController(DatabaseContext databaseContext, IMediator mediator)
         {
             _databaseContext = databaseContext;
+            _mediator = mediator;
         }
 
         [HttpGet]
-        public async Task<IReadOnlyCollection<TodoListItemViewModel>> GetTodoListItems(Guid userId, CancellationToken token)
+        public async Task<IReadOnlyCollection<TodoListResponse>> GetTodoListItems([FromQuery] GetTodoListQuery query, CancellationToken token)
         {
-            var user = await _databaseContext.Users.SingleAsync(user => user.Id == userId, token);
-
-            return await _databaseContext.Entry(user).Collection(user => user.TodoListItems).Query()
-                .Select(todoListItems => new TodoListItemViewModel
-                {
-                    Title = todoListItems.Title,
-                    Content = todoListItems.Content,
-                    Id = todoListItems.Id
-                })
-                .ToListAsync(token);
-
-            //return await _databaseContext.Users.Where(user => user.Id == userId)
-            //    .SelectMany(user => user.TodoListItems)
-            //    .Select(todoListItems => new TodoListItemViewModel
-            //    {
-            //        Title = todoListItems.Title,
-            //        Content = todoListItems.Content,
-            //        Id = todoListItems.Id
-            //    })
-            //    .ToListAsync(token);
+            return await _mediator.Send(query, token);
         }
 
         [HttpPost]
-        public async Task<Guid> CreateTodoListItem(Guid userId, string title, string content, CancellationToken token)
+        public async Task<Guid> CreateTodoListItem([FromBody] AddTodoListCommand command, CancellationToken token)
         {
-            var user = await _databaseContext.Users.SingleAsync(user => user.Id == userId, token);
-            var todoListItem = user.AddTodoListItem(title);
-            todoListItem.SetContent(content ?? string.Empty);
+            return await _mediator.Send(command, token);
+        }
 
-            await _databaseContext.SaveChangesAsync(token);
-
-            return todoListItem.Id;
+        [HttpPut]
+        public async Task<Guid> UpdateTodoListItem([FromBody] UpdateTodoListCommand command, CancellationToken token)
+        {
+            return await _mediator.Send(command, token);
         }
 
         [HttpDelete]
-        public async Task RemoveTodoListItem(Guid userId, Guid todoListItemId, CancellationToken token)
+        public async Task RemoveTodoListItem([FromBody] DeleteTodoListCommand command, CancellationToken token)
         {
-            var user = await _databaseContext.Users.SingleAsync(user => user.Id == userId, token);
-            var todoListItem = await _databaseContext.Entry(user).Collection(user => user.TodoListItems).Query()
-                .SingleAsync(todoListItem=> todoListItem.Id==todoListItemId, token);
-            user.RemoveTodoListItem(todoListItem);
-
-            await _databaseContext.SaveChangesAsync(token);
-
+            await _mediator.Send(command, token);
             return;
-
         }
+
+
     }
 }

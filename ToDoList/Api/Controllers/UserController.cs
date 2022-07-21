@@ -32,13 +32,13 @@ namespace ToDoList.Api.Controllers
             _mediator = mediator;
         }
         [HttpGet]
-        public async Task<IReadOnlyCollection<GetUsersResponse>> GetUsers([FromQuery]GetUsersQuery query, CancellationToken token)
+        public async Task<IReadOnlyCollection<GetUsersResponse>> GetUsers([FromQuery] GetUsersQuery query, CancellationToken token)
         {
             return await _mediator.Send(query, token);
         }
 
         [HttpPost]
-        public async Task<Guid> CreateUser([FromBody]CreateUserCommand command, CancellationToken token)
+        public async Task<Guid> CreateUser([FromBody] CreateUserCommand command, CancellationToken token)
         {
             return await _mediator.Send(command, token);
         }
