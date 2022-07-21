@@ -1,6 +1,8 @@
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using ToDoList.Api.Pipelines;
 using ToDoList.Infrastructure.Database;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,7 +13,13 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
+AssemblyScanner.FindValidatorsInAssembly(Assembly.GetExecutingAssembly()).ForEach(pair =>
+{
+    builder.Services.AddScoped(typeof(IValidator), pair.ValidatorType);
+    builder.Services.AddScoped(pair.InterfaceType, pair.ValidatorType);
+});
+builder.Services.AddMediatR(Assembly.GetExecutingAssembly())
+    .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
 builder.Services.AddDbContext<DatabaseContext>(settings =>
     settings.UseNpgsql(builder.Configuration.GetConnectionString("Main"), sqlOpt => sqlOpt.CommandTimeout(300))

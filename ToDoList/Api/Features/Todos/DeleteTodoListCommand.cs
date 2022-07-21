@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ToDoList.Infrastructure.Database;
 
@@ -9,6 +10,15 @@ namespace ToDoList.Api.Features.Todos
         public Guid userId { get; set; }
         public Guid todoListItemId { get; set; }
     }
+
+    //public class DeleteTodoListCommandValidator : AbstractValidator<DeleteTodoListCommand>
+    //{
+    //    public DeleteTodoListCommandValidator()
+    //    {
+    //        RuleFor(c => c.userId).NotNull();
+    //        RuleFor(c => c.todoListItemId).NotNull();
+    //    }
+    //}
 
     public class DeleteTodoListCommandHandler : IRequestHandler<DeleteTodoListCommand, Unit> 
     { 

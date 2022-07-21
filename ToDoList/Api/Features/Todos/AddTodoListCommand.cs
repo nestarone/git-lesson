@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ToDoList.Infrastructure.Database;
 
@@ -9,6 +10,15 @@ namespace ToDoList.Api.Features.Todos
         public Guid userId { get; set; }
         public string title { get; set; }
         public string content { get; set; }
+    }
+
+    public class AddTodoListCommandValidator : AbstractValidator<AddTodoListCommand>
+    {
+        public AddTodoListCommandValidator()
+        {
+            RuleFor(c => c.title).NotEmpty();
+            //RuleFor(c => c.userId).NotNull();
+        }
     }
 
     public class AddTodoItemHandler : IRequestHandler<AddTodoListCommand, Guid> { 

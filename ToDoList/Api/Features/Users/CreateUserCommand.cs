@@ -1,12 +1,21 @@
 ﻿using MediatR;
 using ToDoList.Domain;
 using ToDoList.Infrastructure.Database;
+using FluentValidation;
 
 namespace ToDoList.Api.Features.Users
 {
     public class CreateUserCommand : IRequest<Guid>
     {
         public string Name  { get; set; }
+    }
+
+    public class CreateUserCommandValidator:AbstractValidator<CreateUserCommand>
+    {
+        public CreateUserCommandValidator() 
+        {
+            RuleFor(c => c.Name).NotEmpty().MinimumLength(5);
+        }
     }
 
     public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Guid>
